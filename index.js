@@ -10,32 +10,32 @@ const OTA = require('./src/services/ota') // ota 服务
 const LOG = require('./src/services/log') // log 服务
 const deviceRouter = require('./src/device/router'); //设备层路由
 const socketServer = new SocketServer({
-    parserPath:function(data){
-        if(has(data,'reqType') || has(data,'respType')){
+    parserPath: function (data) {
+        if (has(data, 'reqType') || has(data, 'respType')) {
             debug(`path = ${data['reqType']} || ${data['respType']}`);
-           return data['reqType'] || data['respType']
-        }else{
-           return '/'
+            return data['reqType'] || data['respType']
+        } else {
+            return '/'
         }
     },
     WAIT_OVERTIME: 5000,  // 设备上报时间的超时时间
     MAX_CONNECTIONS: 5000, // socket server 最大连接数
 })
 // 注入设备层错误处理服务
- socketServer.service(new AppError())
+socketServer.service(new AppError())
 //socketServer.servers.AppError.throwFactory(CustomError,AppError.error)
 // 注入数据库服务，添加数据库配置项
- socketServer.service(new DB(config.DB))
+socketServer.service(new DB(config.DB))
 // 注入 ota 服务
- socketServer.service(new OTA(config.OTA))
+socketServer.service(new OTA(config.OTA))
 // 注入 log 服务
- socketServer.service(new LOG(config.LOG))
+socketServer.service(new LOG(config.LOG))
 
 //实例化路由对象
 
 deviceRouter(socketServer)
 
-socketServer.listen(config.SOCKET_PORT,'0.0.0.0',function(){
+socketServer.listen(config.SOCKET_PORT, '0.0.0.0', function () {
     socketServerLog(`socket server listen ${config.SOCKET_PORT}`)
 })
 
@@ -47,7 +47,7 @@ const errHandle = require('./src/restful/middleware/errorHandle')
 const logHandle = require('./src/restful/middleware/logHandle')
 app.locals.socketServer = socketServer //将设备端服务绑定在 app 上
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended:false }))
+app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
@@ -57,6 +57,6 @@ app.use(logHandle)
 
 app.use(errHandle)
 
-app.listen(config.SERVER_PORT,function(){
+app.listen(config.SERVER_PORT, function () {
     httpServerLog(`http server listen ${config.SERVER_PORT}`)
 })
