@@ -1,0 +1,42 @@
+{
+  "name": "sockets-server",
+  "version": "0.0.2",
+  "description": "socket server",
+  "author": "zenheart",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zenHeart/sockets-server/tree/develop"
+  },
+  "var": {
+    "ignore": "ota,*.log,tests,client,public,coverage"
+  },
+  "scripts": {
+    "docs:svg": "scripts/update_svg.sh",
+    "test": "export DEBUG='socket:*';jest",
+    "build": "webpack;cd npm_dist;npm publish",
+    "demo": "export DEBUG='socket:*';node ./examples/demo.js"
+  },
+  "keywords": [
+    "socket",
+    "server"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "hashids": "^1.1.4",
+    "lodash": "^4.17.10",
+    "nyc": "^11.7.1",
+    "path-to-regexp": "^2.2.1",
+    "request": "^2.87.0",
+    "shortid": "^2.2.8"
+  },
+  "devDependencies": {
+    "array-flatten": "^2.1.1",
+    "clean-webpack-plugin": "^0.1.19",
+    "copy-webpack-plugin": "^4.5.2",
+    "debug": "^3.1.0",
+    "lerna": "^2.11.0",
+    "merge-descriptors": "^1.0.1",
+    "supports-color": "^5.4.0"
+  }
+}
