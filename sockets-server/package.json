@@ -13,9 +13,9 @@
   },
   "scripts": {
     "docs:svg": "scripts/update_svg.sh",
-    "test": "export DEBUG='socket:*';jest",
+    "test": "set DEBUG='socket:*';jest",
     "build": "webpack;cd npm_dist;npm publish",
-    "demo": "export DEBUG='socket:*';node ./examples/demo.js"
+    "demo": "set DEBUG=socket:* && node ./examples/demo.js"
   },
   "keywords": [
     "socket",
@@ -28,7 +28,8 @@
     "nyc": "^11.7.1",
     "path-to-regexp": "^2.2.1",
     "request": "^2.87.0",
-    "shortid": "^2.2.8"
+    "shortid": "^2.2.8",
+    "sockets-server": "^0.0.2"
   },
   "devDependencies": {
     "array-flatten": "^2.1.1",

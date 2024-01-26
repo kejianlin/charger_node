@@ -1,3 +1,5 @@
+process.env.NODE_CONFIG_DIR = './config/default'
+
 const socketServerLog = require('debug')('socket:server')
 const httpServerLog = require('debug')('socket:http')
 const debug = require('debug')('socket:parsePath');
@@ -21,6 +23,7 @@ const socketServer = new SocketServer({
     WAIT_OVERTIME: 5000,  // 设备上报时间的超时时间
     MAX_CONNECTIONS: 5000, // socket server 最大连接数
 })
+
 // 注入设备层错误处理服务
 socketServer.service(new AppError())
 //socketServer.servers.AppError.throwFactory(CustomError,AppError.error)

@@ -4,7 +4,7 @@
 const debug = require('debug')('socket:server');
 const net = require('net');
 
-const {Server} = net;
+const { Server } = net;
 
 const request = require('request')
 const Client = require('./Client');
@@ -23,7 +23,7 @@ const logConfig = require('config')
  * @module ClientServer
  */
 
-module.exports =  class ClientServer extends Server {
+module.exports = class ClientServer extends Server {
     /**
      * 实例化设备服务器对象.
      *
@@ -37,12 +37,12 @@ module.exports =  class ClientServer extends Server {
      * @param {Object} connectionListener {@link https://nodejs.org/dist/latest-v8.x/docs/api/net.html#net_net_createserver_options_connectionlistener|connectionLisner}.
      * @return {clientServer} 返回一个 socketServer
      */
-    constructor(config={
-        parsePath:null,
-        parserData:null
-    },options={
-    },connectionListener=null) {
-        super(options,connectionListener);
+    constructor(config = {
+        parsePath: null,
+        parserData: null
+    }, options = {
+    }, connectionListener = null) {
+        super(options, connectionListener);
         //所有连接
         this.onlineNum = 0;
         //保存所有 socket 句柄
@@ -57,7 +57,7 @@ module.exports =  class ClientServer extends Server {
         //连接数
         this.connectNum = 0;
         //服务器最大连接数量
-        this.MAX_CONNECTIONS = (config && config.MAX_CONNECTIONS)  || 100;
+        this.MAX_CONNECTIONS = (config && config.MAX_CONNECTIONS) || 100;
         //初始设定 clientServer
         this.setup();
         this.log = new LOG(logConfig.LOG)
@@ -76,9 +76,9 @@ module.exports =  class ClientServer extends Server {
         this.lazyRouter();
 
         //连接函数绑定监听方法
-        this.on('connection',this._onconnection);
+        this.on('connection', this._onconnection);
         //绑定推送数据事件
-        this.on('clientData',this._onclientData);
+        this.on('clientData', this._onclientData);
     }
 
 
@@ -91,10 +91,10 @@ module.exports =  class ClientServer extends Server {
             //此处加载内部中间件
             //若自定义了内容解析器,则加载该解析器
             this._router.use(parserData({
-               parser:this.config.parserData
+                parser: this.config.parserData
             }));
             this._router.use(parsePath({
-                parser:this.config.parserPath
+                parser: this.config.parserPath
             }));
         }
     };
@@ -106,32 +106,32 @@ module.exports =  class ClientServer extends Server {
     addClient(client) {
         let clientId = client.clientId;
         this.client[clientId] = client;
-        this.emit('newClient',client);
+        this.emit('newClient', client);
     }
 
     /**
      * 添加授权客户端的句柄.
      */
     addAuthClient(client) {
-        let {id} = client.auth;
+        let { id } = client.auth;
         this.authClient[id] = client;
-        this.emit('newAuthClient',client);
+        this.emit('newAuthClient', client);
     }
     /**
      * 控制连接数量
      */
     manageConnectNumber(cb) {
         let self = this;
-        this.getConnections(function (err,count) {
-            if(err){
+        this.getConnections(function (err, count) {
+            if (err) {
                 cb(err);
             }
-            else{
+            else {
                 self.connectNum = count;
-                if(self.connectNum > self.MAX_CONNECTIONS) {
+                if (self.connectNum > self.MAX_CONNECTIONS) {
                     cb(new Error(`device connect over max number ${self.MAX_CONNECTIONS}`))
                 } else {
-                    cb(null,true);
+                    cb(null, true);
                 }
 
             }
@@ -144,14 +144,14 @@ module.exports =  class ClientServer extends Server {
      * @param {String} data 写入的数据,注意是字符串.
      * @param {Function=} cb 回调函数
      */
-    write(clientId,data,cb=null) {
+    write(clientId, data, cb = null) {
         let client = this.client[clientId];
 
         //客户端不存在
-        if(!client) {
-            throw new Error('client does not exist' );
+        if (!client) {
+            throw new Error('client does not exist');
         }
-        client.socket.write(data,cb);
+        client.socket.write(data, cb);
     }
 
     /**
@@ -160,14 +160,14 @@ module.exports =  class ClientServer extends Server {
      * @param {String} data 写入的数据,注意是字符串.
      * @param {Function=} cb 回调函数
      */
-    writeById(id,data,cb=null) {
+    writeById(id, data, cb = null) {
         let client = this.authClient[id];
 
         //客户端不存在
-        if(!client) {
-            throw new Error('client does not exist' );
+        if (!client) {
+            throw new Error('client does not exist');
         }
-        client.socket.write(data,cb);
+        client.socket.write(data, cb);
 
     }
 
@@ -178,12 +178,12 @@ module.exports =  class ClientServer extends Server {
      * @return {Promise} 设备响应结果
      *
      */
-    sendCommand(id,data) {
+    sendCommand(id, data) {
         let self = this;
-        let client  = self.authClient[id] || null;
+        let client = self.authClient[id] || null;
         //客户端不存在
-        if(!client) {
-             return Promise.reject(new Error('client  offline'));
+        if (!client) {
+            return Promise.reject(new Error('client  offline'));
         } else {
             return client.sendCommand(data);
         }
@@ -197,11 +197,11 @@ module.exports =  class ClientServer extends Server {
     broadCommand(data) {
         let self = this;
         let clientAll = [];
-        let {authClient} = self;
+        let { authClient } = self;
 
         for (let clientId in authClient) {
             let client = authClient[clientId];
-            debug('broad command to client %s',client.clientId);
+            debug('broad command to client %s', client.clientId);
             clientAll.push(client.sendCommand(data));
         }
         return Promise.all(clientAll);
@@ -217,30 +217,30 @@ module.exports =  class ClientServer extends Server {
         let offset = 0;
         let path = '/';
 
-        if(typeof fn !== 'function') {
+        if (typeof fn !== 'function') {
             let arg = fn;
 
 
-            while(Array.isArray(arg) && arg.length !== 0) {
+            while (Array.isArray(arg) && arg.length !== 0) {
                 arg = arg[0];
             }
 
-            if(typeof arg !== 'function') {
+            if (typeof arg !== 'function') {
                 offset = 1;
                 path = fn;
             }
         }
 
-        let callbacks = slice.call(arguments,offset);
+        let callbacks = slice.call(arguments, offset);
 
-        if(callbacks.length === 0 ){
+        if (callbacks.length === 0) {
             throw new TypeError(`use function requires middleware functions!`);
         }
 
         let router = this._router;
         //挂载中间件
         callbacks.forEach(function (fn) {
-            return router.use(path,fn);
+            return router.use(path, fn);
         });
         //实现链式调用
         return this;
@@ -251,9 +251,9 @@ module.exports =  class ClientServer extends Server {
      * @param {Object} service 服务对象.
      * @param {String} name 服务名称可选字段.
      */
-    service(service,name = service.constructor.name) {
-        if(service.constructor && service.constructor.name !== 'Object') {
-            if(this.services[name]) {
+    service(service, name = service.constructor.name) {
+        if (service.constructor && service.constructor.name !== 'Object') {
+            if (this.services[name]) {
                 throw new Error('can\'t define duplicate service,yon can set a different name')
             }
             this.services[name] = service;
@@ -268,7 +268,7 @@ module.exports =  class ClientServer extends Server {
      * @param {Number} clientId
      */
     removeClient(clientId) {
-       return delete this.client[clientId];
+        return delete this.client[clientId];
     }
     /**
      *
@@ -278,16 +278,16 @@ module.exports =  class ClientServer extends Server {
     _onconnection(socket) {
         let self = this;
         this.manageConnectNumber(function (err) {
-            if(err) {
+            if (err) {
                 //todo 此处连接限制需要上报
-                self.emit('overConnect',self.MAX_CONNECTIONS);
+                self.emit('overConnect', self.MAX_CONNECTIONS);
                 //超出连接则关闭当前 socket
                 socket.destroy();
             } else {
                 //设置接收格式为 utf-8
                 socket.setEncoding('utf8');
                 //传入客户端配置项
-                let client = new Client(self,socket);
+                let client = new Client(self, socket);
                 self.addClient(client);
             }
 
@@ -305,21 +305,21 @@ module.exports =  class ClientServer extends Server {
         debug('receive clientData event!');
         //无需在注入回调
         //记录 devie-data 设备发送的消息，写入日志
-        try{
+        try {
             let logData = {
                 clientIp: client.socket.remoteAddress,
-                clientId: typeof(client.auth)==='undefined'?'-':client.auth.id,
+                clientId: typeof (client.auth) === 'undefined' ? '-' : client.auth.id,
                 label: "device-send",
                 data: JSON.parse(client.rawData)
             }
             this.log.deviceLogHandler(logData)
-        }catch (err){
-            debug('parser json fail: %s',err.message);
+        } catch (err) {
+            debug('parser json fail: %s', err.message);
         }
         router.handle(client);
     }
-    notify(clientId,notifyData,postUrl){
-        request.post({url:postUrl, formData: notifyData}, function optionalCallback(err, httpResponse, body) {
+    notify(clientId, notifyData, postUrl) {
+        request.post({ url: postUrl, formData: notifyData }, function optionalCallback(err, httpResponse, body) {
             if (err) {
                 return console.error('failed:', err);
             }

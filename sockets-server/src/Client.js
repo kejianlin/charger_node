@@ -1,19 +1,19 @@
-const  EventEmitter = require('events');
-const  shortId = require('shortid');
-const  HashIds =  require('hashids');
-const  debug = require('debug')('socket:client');
-const  LOG = require('../../src/services/log')
+const EventEmitter = require('events');
+const shortId = require('shortid');
+const HashIds = require('hashids');
+const debug = require('debug')('socket:client');
+const LOG = require('../../src/services/log')
 /**
  * 客户端模块
  * @module Client.
  */
-module.exports = class Client extends  EventEmitter {
+module.exports = class Client extends EventEmitter {
     /**
      * 实例化客户端对象
      * @param {Object} server 参见 {@link ClientServer}
      * @param {Object} socket 参见 {@link https://nodejs.org/dist/latest-v10.x/docs/api/net.html#net_event_connection|connnection}
      */
-    constructor(server,socket) {
+    constructor(server, socket) {
         //调用父类方法
         super();
         this.rawData = null;
@@ -21,7 +21,7 @@ module.exports = class Client extends  EventEmitter {
         this.socket = socket;
         this.auth = undefined;
         //利用 socket 的 ip 和端口生成客户端 id
-        this.clientId = socket.remoteAddress+":"+socket.remotePort;
+        this.clientId = socket.remoteAddress + ":" + socket.remotePort;
         // 对每个实例对象都需要组装一个复合对象给 getAllInfo 使用
         this.extendClient = {
             illegal: false,
@@ -31,7 +31,7 @@ module.exports = class Client extends  EventEmitter {
             runStatus: 4, // 设备的运行状态
             mac: null, // 设备 mac 地址
             meterNumber: null, // 设备电表编号
-            url : null, // 设备的推送地址
+            url: null, // 设备的推送地址
             ownerId: null, // 目前设备所属厂商
             id: null, // 当前设备编号
             chargingInfo: {
@@ -62,12 +62,12 @@ module.exports = class Client extends  EventEmitter {
 
         this.socket.setTimeout(300000);
         // 监听到数据发送
-        this.socket.on('data',this._ondata);
+        this.socket.on('data', this._ondata);
         // 监听到错误
-        this.socket.on('error',this._onerror);
-        this.socket.on('timeout',this._ontimeout);
-        this.socket.on('close',this._onclose);
-        this.socket.on('end',this._onend);
+        this.socket.on('error', this._onerror);
+        this.socket.on('timeout', this._ontimeout);
+        this.socket.on('close', this._onclose);
+        this.socket.on('end', this._onend);
     }
 
 
@@ -80,14 +80,14 @@ module.exports = class Client extends  EventEmitter {
         //记录服务器向设备发送的消息
         let logData = {
             clientIp: this.socket.remoteAddress,
-            clientId: this.hasOwnProperty("auth")?this.auth.id:'-',
+            clientId: this.hasOwnProperty("auth") ? this.auth.id : '-',
             label: "server-send",
             data: JSON.parse(data)
         }
         this.server.log.deviceLogHandler(logData)
-        this.socket.write(data,function () {
+        this.socket.write(data, function () {
             debug(`write to ${self.clientId} : ${data}`);
-            self.emit('clientWrite',self,data);
+            self.emit('clientWrite', self, data);
         });
 
     }
@@ -99,30 +99,30 @@ module.exports = class Client extends  EventEmitter {
      */
     sendCommand(data) {
         let msgId = Client.generateMsgId();
-        let subData = Object.assign({},data.data,{"msgId":msgId})
+        let subData = Object.assign({}, data.data, { "msgId": msgId })
         let sendData = {
-            "reqType":data.reqType,
-            "data":subData
+            "reqType": data.reqType,
+            "data": subData
         };
         //发送数据
         this.write(JSON.stringify(sendData));
-        return  Promise.race([this._waitOverTime(msgId),this._bindCommand(msgId)])
+        return Promise.race([this._waitOverTime(msgId), this._bindCommand(msgId)])
     }
-    destory(){
+    destory() {
         this.socket.destory();
     }
     /**
      * 生成唯一的 msgId.
      */
     static generateMsgId() {
-        let hashIds = new HashIds(shortId.generate(),8);
+        let hashIds = new HashIds(shortId.generate(), 8);
         return hashIds.encode(1);
     }
     _ondata(data) {
         let server = this.server;
         this.rawData = data;
         debug(`${this.clientId} send data: ${data}`);
-        server.emit('clientData',this);
+        server.emit('clientData', this);
     }
     _onerror(err) {
         debug(err);
@@ -137,17 +137,17 @@ module.exports = class Client extends  EventEmitter {
         this.socket.destroy();
     }
     _onclose(had_error) {
-            this.server.log.ExceptionLogHandler(`${this.extendClient.id} close event for destory`)
-            let server = this.server;
-            let clientId = this.clientId
-            if(typeof(this.auth)==='undefined'){
-                server.removeClient(clientId)
-            }else {
-                let authId = this.auth.id;
-                server.authClient[authId].extendClient.runStatus = 0
-                server.authClient[authId].extendClient.ledStatus = 0
-                this.server.log.ExceptionLogHandler(`${authId+server.authClient[authId].extendClient.runStatus}`)
-            }
+        this.server.log.ExceptionLogHandler(`${this.extendClient.id} close event for destory`)
+        let server = this.server;
+        let clientId = this.clientId
+        if (typeof (this.auth) === 'undefined') {
+            server.removeClient(clientId)
+        } else {
+            let authId = this.auth.id;
+            server.authClient[authId].extendClient.runStatus = 0
+            server.authClient[authId].extendClient.ledStatus = 0
+            this.server.log.ExceptionLogHandler(`${authId + server.authClient[authId].extendClient.runStatus}`)
+        }
     }
     _onend() {
         debug('end');
@@ -162,12 +162,12 @@ module.exports = class Client extends  EventEmitter {
         let self = this;
         let WAIT_OVERTIME = self.server.config.WAIT_OVERTIME || 3000;
 
-        return new Promise((resolve,reject) => {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
                 //响应超时移除监听器
                 self.removeAllListeners(msgId);
-                reject(new  Error(`device no respond in ${WAIT_OVERTIME}ms`));
-            },WAIT_OVERTIME)
+                reject(new Error(`device no respond in ${WAIT_OVERTIME}ms`));
+            }, WAIT_OVERTIME)
         });
     }
     /**
@@ -176,8 +176,8 @@ module.exports = class Client extends  EventEmitter {
      */
     _bindCommand(msgId) {
         let self = this;
-        return  new Promise( (resolve,reject) => {
-            self.once(msgId,function (data) {
+        return new Promise((resolve, reject) => {
+            self.once(msgId, function (data) {
                 resolve(data);
             })
         })

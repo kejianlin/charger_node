@@ -5,7 +5,7 @@
 
 module.exports = {
     database: 'charger',
-    username: 'mysql-admin',
-    password: '111111',
-    host: '119.23.18.135'
+    username: 'root',
+    password: '11555',
+    host: '192.168.1.1'
 }

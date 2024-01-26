@@ -10,17 +10,17 @@ const debug = require('debug')('socket:parseData');
 module.exports = function parseData(options) {
     let parser = internalParser;
 
-    if(options && options.parser) {
-        parser = options.parser ;
+    if (options && options.parser) {
+        parser = options.parser;
 
-        if( typeof parser !== 'function' ) {
-            throw  new TypeError('options.parser must be a function,but get a',typeof parser);
+        if (typeof parser !== 'function') {
+            throw new TypeError('options.parser must be a function,but get a', typeof parser);
         }
     }
 
-    return function parserData(client, next){
+    return function parserData(client, next) {
         client.data = parser(client.rawData);
-        debug(`${client.clientId} : %O`,client.data);
+        debug(`${client.clientId} : %O`, client.data);
         next();
     };
 };
@@ -32,10 +32,11 @@ module.exports = function parseData(options) {
  * @return {*}
  */
 function internalParser(data) {
-    try{
+    try {
         return JSON.parse(data);
+        // return data
     } catch (e) {
-        debug('parser json fail: %s',e.message);
+        debug('parser json fail: %s', e.message);
         return {};
     }
 }

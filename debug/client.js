@@ -6,13 +6,14 @@ let retryTimeout = 3000;    //三秒，定义三秒后重新连接
 let retriedTimes = 0;   //记录重新连接的次数
 let maxRetries = 10;    //最多重新连接十次
 process.stdin.resume(); //process.stdin流来接受用户的键盘输入，这个可读流初始化时处于暂停状态，调用流上的resume()方法来恢复流
-process.stdin.on('data', function(data){
-    if (data.toString().trim().toLowerCase() === 'quit'){
+process.stdin.on('data', function (data) {
+    if (data.toString().trim().toLowerCase() === 'quit') {
         quitting = true;
         console.log('quitting');
         conn.end();
         process.stdin.pause();
     } else {
+        console.log('sending data to server', data);
         conn.write(data);
     }
 });
@@ -22,37 +23,37 @@ process.stdin.on('data', function(data){
         if (retriedTimes >= maxRetries) {
             throw new Error('Max retries have been exceeded, I give up.');
         }
-        retriedTimes +=1;
+        retriedTimes += 1;
         setTimeout(connect, retryTimeout);
     }
     conn = net.createConnection(port);
-    conn.on('connect', function() {
+    conn.on('connect', function () {
         retriedTimes = 0;
         console.log('connect to server');
         const notifyData = {
-            "reqType":"notifyNewDevice",
-            "data":{
+            "reqType": "notifyNewDevice",
+            "data": {
                 "mac": "32468efd3f50",
                 "isReconnect": 0
             }
         }
         conn.write(JSON.stringify(notifyData))
     });
-    conn.on('data', function(chunk){
-        if(!isJsonString(chunk.toString())) {
+    conn.on('data', function (chunk) {
+        if (!isJsonString(chunk.toString())) {
             console.log(chunk);
-            setTimeout(function(){
+            setTimeout(function () {
                 sendData = {
                     respType: "notifyOTAResult",
                     data: {
-                        "result":0,
-                        "oldVersionId":1,
-                        "newVersionId":2
+                        "result": 0,
+                        "oldVersionId": 1,
+                        "newVersionId": 2
                     }
                 }
                 conn.write(JSON.stringify(sendData))
-            },5000)
-        }else {
+            }, 5000)
+        } else {
             data = JSON.parse(chunk);
             console.log(data);
             if (data.reqType === "setChargingStart") {
@@ -119,18 +120,18 @@ process.stdin.on('data', function(data){
                         "blockSize": 100
                     }
                 }
-                setTimeout(function(){
+                setTimeout(function () {
                     conn.write(JSON.stringify(sendData2))
-                },5000)
+                }, 5000)
             }
         }
         //conn.write(JSON.stringify(data))
     })
-    conn.on('error', function(err) {
+    conn.on('error', function (err) {
         console.log('Error in connection:', err);
     });
-    conn.on('close', function() {
-        if(! quitting) {
+    conn.on('close', function () {
+        if (!quitting) {
             console.log('connection got closed, will try to reconnect');
             reconnect();
         }

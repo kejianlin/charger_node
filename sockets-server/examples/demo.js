@@ -1,4 +1,4 @@
-const PORT = 11111;
+const PORT = 11113;
 
 const debug = require('debug')('socket:demo');
 const SocketServer = require('sockets-server');
@@ -17,18 +17,21 @@ const rl = readline.createInterface({
 const socketServer = new SocketServer({
     /*设备消息上报的超时时间*/
     WAIT_OVERTIME: 5000,
-    MAX_CONNECTIONS:5000,
+    MAX_CONNECTIONS: 5000,
 });
 
-socketServer.listen(PORT,'0.0.0.0',function () {
+socketServer.listen(PORT, '0.0.0.0', function () {
+    console.log('server start');
     debug(`socket server listen ${PORT}`);
-    socket.connect(PORT,function () {
+    // 充电桩连接成功
+    socket.connect(PORT, function () {
         debug(`simulate client connected`);
         rl.setPrompt(`enter you want send to server> `);
         rl.prompt();
     });
-    socket.on('data',function (data) {
-        debug('client receive:',data.toString());
+    // 监听充电桩发送的数据
+    socket.on('data', function (data) {
+        debug('client receive:', data.toString());
         rl.setPrompt(`enter you want send to server> `);
         rl.prompt();
     });
@@ -38,6 +41,7 @@ socketServer.listen(PORT,'0.0.0.0',function () {
                 rl.close();
                 break;
             default:
+                console.log('send to server:', line);
                 socket.write(line);
                 break;
         }
@@ -46,7 +50,7 @@ socketServer.listen(PORT,'0.0.0.0',function () {
         process.exit(0);
     });
 });
-socketServer.use(function (client,next) {
+socketServer.use(function (client, next) {
     client.write('server respond ' + client.rawData);
     next();
 });

@@ -1,4 +1,4 @@
-module.exports={
+module.exports = {
     apps: [{
         name: 'charger_node_v2',
         script: 'index.js',
