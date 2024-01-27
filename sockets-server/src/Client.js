@@ -80,9 +80,10 @@ module.exports = class Client extends EventEmitter {
         //记录服务器向设备发送的消息
         let logData = {
             clientIp: this.socket.remoteAddress,
-            clientId: this.hasOwnProperty("auth") ? this.auth.id : '-',
+            clientId: this.hasOwnProperty("auth") ? this.auth?.id : '-',
             label: "server-send",
-            data: JSON.parse(data)
+            data: data
+            // data: JSON.parse(data)
         }
         this.server.log.deviceLogHandler(logData)
         this.socket.write(data, function () {
@@ -105,7 +106,7 @@ module.exports = class Client extends EventEmitter {
             "data": subData
         };
         //发送数据
-        this.write(JSON.stringify(sendData));
+        this.write(data);
         return Promise.race([this._waitOverTime(msgId), this._bindCommand(msgId)])
     }
     destory() {

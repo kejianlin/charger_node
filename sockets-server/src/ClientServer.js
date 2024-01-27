@@ -293,7 +293,33 @@ module.exports = class ClientServer extends Server {
 
         })
     }
+    getCurrentDateTimeString() {
+        const currentDate = new Date();
 
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const hours = String(currentDate.getHours()).padStart(2, '0');
+        const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+        const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+        const milliseconds = String(currentDate.getMilliseconds()).padStart(3, '0');
+
+        // 拼接成你需要的格式
+        const formattedDateTimeString = `${year}/${month}/${day}/${hours}/${minutes}/${seconds}/${milliseconds}`;
+
+        return formattedDateTimeString;
+    }
+
+    handleHeartbeat(client) {
+        // 更新连接的活跃状态
+        // clients[clientId].lastHeartbeat = Date.now();
+        if (client.rawData.includes("_T00001")) {
+            // 根据心跳数据包进行相应处理
+            debug('收到 心跳包 ');
+            const response = "_S00001/0025:01/" + this.getCurrentDateTimeString() + "\r\n";
+            client.sendCommand(response)
+        }
+    }
 
     /**
      * 处理客户端的数据请求
@@ -305,6 +331,7 @@ module.exports = class ClientServer extends Server {
         debug('receive clientData event!');
         //无需在注入回调
         //记录 devie-data 设备发送的消息，写入日志
+        this.handleHeartbeat(client)
         try {
             let logData = {
                 clientIp: client.socket.remoteAddress,
@@ -328,10 +355,3 @@ module.exports = class ClientServer extends Server {
         });
     }
 }
-
-
-
-
-
-
-
